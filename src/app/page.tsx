@@ -1,22 +1,23 @@
+import Link from "next/link";
 import { ArticleGrid } from "@/components/ArticleGrid";
+import { BackgroundShapes } from "@/components/BackgroundShapes";
+import { Footer } from "@/components/Footer";
 import { HeroSection } from "@/components/HeroSection";
 import { Navigation } from "@/components/Navigation";
-import { getPosts } from "@/lib/posts";
 import { getHeroData } from "@/lib/hero";
-import Link from "next/link";
-import { Footer } from "@/components/Footer";
+import { getPosts } from "@/lib/posts";
 
-import { BackgroundShapes } from "@/components/BackgroundShapes";
+export const revalidate = 60;
 
 export default async function Home() {
   const [posts, heroData] = await Promise.all([getPosts(), getHeroData()]);
 
   return (
-    <div 
+    <div
       className="min-h-screen bg-[#bbf7d0] text-on-surface font-sans text-body-md overflow-x-hidden relative z-0"
       style={{
         backgroundImage: "radial-gradient(circle, #000 2px, transparent 2px)",
-        backgroundSize: "48px 48px"
+        backgroundSize: "48px 48px",
       }}
     >
       <BackgroundShapes />
