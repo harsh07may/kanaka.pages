@@ -11,11 +11,10 @@
     "format": "biome format --write",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:migrate-content": "node --experimental-strip-types scripts/migrate-content-to-db.ts"
+    "db:migrate-content": "tsx scripts/migrate-content-to-db.ts"
   },
   "dependencies": {
     "@keystatic/core": "^0.5.50",
-    "@keystatic/next": "^5.0.4",
     "@types/mdx": "^2.0.13",
     "drizzle-orm": "^0.45.2",
     "framer-motion": "^12.40.0",
@@ -35,6 +34,7 @@
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.10",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
     "typescript": "^5"
   }
 }

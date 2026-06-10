@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
-import { db } from "../src/lib/db";
+import { db } from "../src/lib/db/index";
 import { posts } from "../src/lib/db/schema";
 
 const POSTS_DIR = path.join(process.cwd(), "content", "posts");

@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/keystatic/"],
+      disallow: ["/api/"],
     },
     sitemap: "https://kanaka-pages.vercel.app/sitemap.xml",
   };
