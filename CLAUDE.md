@@ -44,3 +44,7 @@ The project uses a custom **Raw Impact** neobrutalist design system built on Tai
 - **Path alias**: `@/*` maps to `src/*`
 - **Fonts**: Loaded via `next/font/google` in `src/app/fonts.ts` and applied as CSS variables (`--font-hanken-grotesk`, `--font-jetbrains-mono`) on `<html>`.
 - **CSS**: Tailwind v4 via PostCSS. `globals.css` imports preflight and utilities, then defines base typography scales using `clamp()`.
+
+## Agent Configuration
+
+`.claude/` is the single source of truth for Claude Code configuration (skills, settings) in this repo. Do not reintroduce a separate `.agents/` directory — keep all skills and agent settings under `.claude/`.
