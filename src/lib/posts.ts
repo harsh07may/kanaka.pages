@@ -57,3 +57,10 @@ export async function getRelatedPosts(
   const all = await getPosts();
   return all.filter((p) => p.slug !== currentSlug).slice(0, limit);
 }
+
+export async function getPostById(
+  id: string,
+): Promise<(Post & { content: string }) | undefined> {
+  const [row] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+  return row ? { ...rowToPost(row), content: row.content } : undefined;
+}
