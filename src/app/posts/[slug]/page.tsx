@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { AuthorCard } from "@/components/AuthorCard";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
@@ -67,6 +68,8 @@ export default async function PostPage({ params }: Props) {
   if (!post) notFound();
 
   if (post.status === "draft") {
+    // Drafts must be rendered dynamically per-request to safely read the session cookie
+    await connection();
     const session = await getSession();
     if (!session.isLoggedIn) notFound();
   }
