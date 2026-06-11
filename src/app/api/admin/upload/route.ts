@@ -31,10 +31,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const blob = await put(file.name, file, {
-    access: "public",
-    addRandomSuffix: true,
-  });
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return NextResponse.json(
+      {
+        error:
+          "Image uploads are not configured (missing BLOB_READ_WRITE_TOKEN)",
+      },
+      { status: 500 },
+    );
+  }
 
-  return NextResponse.json({ url: blob.url });
+  try {
+    const blob = await put(file.name, file, {
+      access: "public",
+      addRandomSuffix: true,
+    });
+
+    return NextResponse.json({ url: blob.url });
+  } catch (error) {
+    console.error("Blob upload failed:", error);
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  }
 }
