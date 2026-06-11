@@ -10,7 +10,6 @@ import {
   diffSourcePlugin,
   GenericJsxEditor,
   headingsPlugin,
-  InsertImage,
   InsertThematicBreak,
   imagePlugin,
   type JsxComponentDescriptor,
@@ -30,7 +29,11 @@ import {
   UndoRedo,
 } from "@mdxeditor/editor";
 import type { ForwardedRef } from "react";
-import { InsertCallout, InsertImageGrid } from "./jsx-toolbar-buttons";
+import {
+  InsertCallout,
+  InsertImageGrid,
+  InsertImageUpload,
+} from "./jsx-toolbar-buttons";
 
 async function uploadImage(file: File): Promise<string> {
   const formData = new FormData();
@@ -116,7 +119,7 @@ export default function InitializedMDXEditor({
               <ListsToggle />
               <Separator />
               <CreateLink />
-              <InsertImage />
+              <InsertImageUpload />
               <InsertThematicBreak />
               <Separator />
               <InsertCallout />
