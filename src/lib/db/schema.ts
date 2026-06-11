@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 export const posts = pgTable("posts", {
   id: text("id").primaryKey(),
@@ -26,3 +26,10 @@ export const posts = pgTable("posts", {
 
 export type PostRow = typeof posts.$inferSelect;
 export type NewPostRow = typeof posts.$inferInsert;
+
+export const heroContent = pgTable("hero_content", {
+  key: text("key").primaryKey(),
+  data: jsonb("data").notNull(),
+});
+
+export type HeroContentRow = typeof heroContent.$inferSelect;

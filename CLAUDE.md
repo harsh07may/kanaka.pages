@@ -23,23 +23,26 @@ This is a **Next.js 16 App Router** personal blog project ("kanaka.pages") with 
   - `blogs/page.tsx` — searchable index of all posts
   - `posts/[slug]/page.tsx` — individual post view, statically generated (`dynamicParams = false`)
   - `about/`, `contact/`, `newsletter/`, `privacy/` — static content pages
-  - `keystatic/[[...params]]/page.tsx` + `api/keystatic/[...params]/route.ts` — embedded Keystatic CMS admin UI and API
+  - `admin/login/` — admin login page and `login`/`logout` server actions, session-cookie based auth (`iron-session`)
+  - `admin/(protected)/` — password-protected admin panel: `page.tsx` lists/deletes posts, `posts/new/` and `posts/[id]/edit/` create and edit posts via `PostForm` + MDX editor, `hero/` edits the homepage hero content, `actions.ts` holds the shared `createPost`/`updatePost`/`deletePost`/`requireAuth` server actions
+  - `api/admin/upload/route.ts` — authenticated image upload endpoint (Vercel Blob)
   - `rss.xml/route.ts`, `sitemap.ts`, `robots.ts` — generated SEO/feed routes
   - `layout.tsx` applies global fonts and `globals.css`; `template.tsx` wraps pages in a `framer-motion` fade/slide transition
-- `src/lib/posts.ts` — Data layer for blog posts. Reads MDX files from `content/posts/*.mdx`, parsing frontmatter with `gray-matter`. Exports `getPostSlugs()`, `getPosts()`, `getPost(slug)`, and `getRelatedPosts(slug, limit)`.
+- `src/lib/posts.ts` — Data layer for blog posts. Reads/writes the `posts` table (PostgreSQL via Drizzle ORM). Exports `getPostSlugs()`, `getPosts()`, `getPostBySlug(slug)`, `getPostById(id)`, and `getRelatedPosts(slug, limit)`.
 - `src/lib/mdx-loader.tsx` — Renders a post's MDX body via `next-mdx-remote/rsc` using the shared `mdxComponents` map.
-- `src/lib/hero.ts` — Reads the homepage hero data (character bio, "where I live", places to go, brain dump, books, contacts) from Keystatic singletons under `content/hero/`.
+- `src/lib/hero.ts` — Reads the homepage hero data (character bio, "where I live", places to go, brain dump, books, contacts) from the `hero_content` table, falling back to built-in defaults (`HERO_DEFAULTS`) when a section hasn't been saved yet.
+- `src/lib/db/` — Drizzle ORM setup: `schema.ts` defines the `posts` and `hero_content` tables, `index.ts` creates the `db` client from `POSTGRES_URL`.
 - `src/lib/types.ts` — Shared TypeScript interfaces. `Post` has a `color` discriminated union (`'yellow' | 'red' | 'blue'`) used to drive per-card theming.
 - `src/mdx-components.tsx` — Custom styled HTML element renderers for MDX (headings, blockquotes, code blocks, images, etc.) plus custom components `Callout` and `ImageGrid` (`src/components/mdx/`).
-- `src/components/` — UI components: `Navigation`, `Footer`, `HeroSection`, `ArticleGrid`/`ArticleCard`, `BlogSearch`, `PostHeader`, `RelatedPosts`, `AuthorCard`, `ShareButtons`, `NotebookModal`, `BackgroundShapes`, `PageTransition`.
+- `src/components/` — UI components: `Navigation`, `Footer`, `HeroSection`, `ArticleGrid`/`ArticleCard`, `BlogSearch`, `PostHeader`, `RelatedPosts`, `AuthorCard`, `ShareButtons`, `NotebookModal`, `BackgroundShapes`, `PageTransition`. `src/components/admin/` holds `PostForm` and the MDX editor used by the admin panel.
 
 ## Content Management
 
-Content is managed via **Keystatic** (`keystatic.config.tsx`), with a local-storage backend in development and a GitHub-backed storage in production (`harsh07may/diaries`).
+Content is managed via a **custom admin panel** at `/admin` (password-protected, session cookie via `iron-session`), backed by **PostgreSQL** (Drizzle ORM). The Footer has a small `⚡` link that opens `/admin`.
 
-- **Posts collection** — `content/posts/*.mdx`. Frontmatter fields: `title`, `date`, `excerpt`, `color`, `tags`, `image`, `author`, `authorRole`, `authorBio`, `authorImage`. MDX body supports the custom `Callout` and `ImageGrid` components.
-- **Hero singletons** — `content/hero/` (`character`, `where-i-live`, `places-to-go`, `brain-dump`, `books`, `contacts`), consumed by `getHeroData()` for the homepage hero section.
-- Edit content locally at `/keystatic` while running `pnpm dev`.
+- **Posts** — stored in the `posts` table (`src/lib/db/schema.ts`). Fields: `title`, `date`, `excerpt`, `color`, `tags`, `image`, `author`, `authorRole`, `authorBio`, `authorImage`, `content` (MDX). Edited via `/admin` using the `PostForm` MDX editor; supports the custom `Callout` and `ImageGrid` components.
+- **Hero content** — stored in the `hero_content` table, one JSON row per section (`character`, `where-i-live`, `places-to-go`, `brain-dump`, `books`, `contacts`). Edited via `/admin/hero`. Run `pnpm db:seed-hero` once to seed the table from the legacy JSON files in `content/hero/`.
+- Run `pnpm db:push` to sync the Drizzle schema to your Postgres database. See `.env.example` for required environment variables (`POSTGRES_URL`, `SESSION_SECRET`, `ADMIN_PASSWORD_HASH`, `BLOB_READ_WRITE_TOKEN`).
 
 ## Design System
 

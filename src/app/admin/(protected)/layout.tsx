@@ -15,6 +15,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         </Link>
         <div className="flex items-center gap-6">
           <Link
+            href="/admin/hero"
+            className="font-mono font-bold uppercase text-sm text-ink underline"
+          >
+            Hero
+          </Link>
+          <Link
             href="/"
             className="font-mono font-bold uppercase text-sm text-ink underline"
           >
