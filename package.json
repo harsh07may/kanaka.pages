@@ -11,7 +11,7 @@
     "format": "biome format --write",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:seed-hero": "tsx scripts/seed-hero.ts"
+    "db:seed-hero": "tsx --env-file=.env scripts/seed-hero.ts"
   },
   "dependencies": {
     "@mdxeditor/editor": "^4.0.2",
