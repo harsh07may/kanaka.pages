@@ -1,5 +1,6 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import { eq } from "drizzle-orm";
+import { db } from "./db";
+import { heroContent } from "./db/schema";
 
 const BOOK_COLOR_MAP: Record<string, string> = {
   yellow: "bg-yellow-200",
@@ -77,73 +78,93 @@ export interface HeroData {
   contacts: ContactsData;
 }
 
-const CONTENT_DIR = path.join(process.cwd(), "content", "hero");
+/** Default content used when a section hasn't been saved to the database yet. */
+export const HERO_DEFAULTS = {
+  character: {
+    name: "Kanaka",
+    bio: "I'm a writer and observer who loves building worlds and telling stories, both Goan and universal!",
+  },
+  "where-i-live": {
+    location: "Goa",
+    description:
+      "A place where the sea breeze meets deep-rooted history, inspiring every word I write.",
+    image: "kanaka-goa-scenery.png",
+  },
+  "places-to-go": {
+    places: [] as PlaceItem[],
+  },
+  "brain-dump": {
+    items: [] as { text: string }[],
+  },
+  books: {
+    books: [] as { title: string; author: string; color: string }[],
+  },
+  contacts: {
+    contacts: [] as {
+      icon: string;
+      handle: string;
+      url: string;
+      bgColor: string;
+    }[],
+  },
+} satisfies Record<string, unknown>;
 
-async function readJson<T>(relativePath: string): Promise<T | null> {
-  try {
-    const raw = await readFile(path.join(CONTENT_DIR, relativePath), "utf-8");
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
+export type HeroSectionKey = keyof typeof HERO_DEFAULTS;
+export type HeroSectionData<K extends HeroSectionKey> =
+  (typeof HERO_DEFAULTS)[K];
+
+export async function getHeroSection<K extends HeroSectionKey>(
+  key: K,
+): Promise<HeroSectionData<K>> {
+  const [row] = await db
+    .select()
+    .from(heroContent)
+    .where(eq(heroContent.key, key))
+    .limit(1);
+  return (row?.data as HeroSectionData<K> | undefined) ?? HERO_DEFAULTS[key];
 }
 
 export async function getHeroData(): Promise<HeroData> {
   const [character, whereILive, placesToGo, brainDump, books, contacts] =
     await Promise.all([
-      readJson<{ name: string; bio: string }>("character.json"),
-      readJson<{ location: string; description: string; image: string }>(
-        "where-i-live/index.json",
-      ),
-      readJson<{ places: PlaceItem[] }>("places-to-go.json"),
-      readJson<{ items: { text: string }[] }>("brain-dump.json"),
-      readJson<{ books: { title: string; author: string; color: string }[] }>(
-        "books.json",
-      ),
-      readJson<{
-        contacts: {
-          icon: string;
-          handle: string;
-          url: string;
-          bgColor: string;
-        }[];
-      }>("contacts.json"),
+      getHeroSection("character"),
+      getHeroSection("where-i-live"),
+      getHeroSection("places-to-go"),
+      getHeroSection("brain-dump"),
+      getHeroSection("books"),
+      getHeroSection("contacts"),
     ]);
 
   return {
     character: {
-      name: character?.name ?? "Kanaka",
-      bio:
-        character?.bio ??
-        "I'm a writer and observer who loves building worlds and telling stories, both Goan and universal!",
+      name: character.name,
+      bio: character.bio,
     },
     "where-i-live": {
-      location: whereILive?.location ?? "Goa",
-      description:
-        whereILive?.description ??
-        "A place where the sea breeze meets deep-rooted history, inspiring every word I write.",
-      image: whereILive?.image
-        ? `/hero/${whereILive.image}`
-        : "/hero/kanaka-goa-scenery.png",
+      location: whereILive.location,
+      description: whereILive.description,
+      image: /^(https?:|\/)/.test(whereILive.image)
+        ? whereILive.image
+        : `/hero/${whereILive.image}`,
     },
     "places-to-go": {
-      places: (placesToGo?.places ?? []).map((p) => ({
+      places: placesToGo.places.map((p) => ({
         name: p.name,
         visited: p.visited,
       })),
     },
     "brain-dump": {
-      items: (brainDump?.items ?? []).map((i) => ({ text: i.text })),
+      items: brainDump.items.map((i) => ({ text: i.text })),
     },
     books: {
-      books: (books?.books ?? []).map((b) => ({
+      books: books.books.map((b) => ({
         title: b.title,
         author: b.author,
         colorClass: BOOK_COLOR_MAP[b.color] ?? "bg-yellow-200",
       })),
     },
     contacts: {
-      contacts: (contacts?.contacts ?? []).map((c) => ({
+      contacts: contacts.contacts.map((c) => ({
         icon: c.icon,
         handle: c.handle,
         url: c.url,

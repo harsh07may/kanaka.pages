@@ -13,7 +13,7 @@ export interface ActionResult {
   error?: string;
 }
 
-async function requireAuth() {
+export async function requireAuth() {
   const session = await getSession();
   if (!session.isLoggedIn) {
     redirect("/admin/login");

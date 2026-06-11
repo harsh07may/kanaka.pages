@@ -24,11 +24,12 @@ pnpm format       # Auto-format with Biome (biome format --write)
 
 ## Content
 
-Blog posts and homepage content are managed with [Keystatic](https://keystatic.com/):
+Blog posts and homepage content are managed through a custom admin panel backed by PostgreSQL (Drizzle ORM):
 
-- Posts live as MDX files in `content/posts/*.mdx`.
-- Homepage hero content (bio, places, books, contacts, etc.) lives in `content/hero/`.
-- While running `pnpm dev`, edit content through the Keystatic admin UI at [http://localhost:3000/keystatic](http://localhost:3000/keystatic).
+- Posts and the homepage hero content (bio, places, books, contacts, etc.) are stored in the database, not in files.
+- Edit content at [http://localhost:3000/admin](http://localhost:3000/admin) (password-protected). A small `⚡` link in the site footer also leads here.
+- Hero content has its own editor at `/admin/hero`.
+- Set up the database with `pnpm db:push` (see `.env.example` for required environment variables), then optionally run `pnpm db:seed-hero` to seed hero content from the legacy JSON files in `content/hero/`.
 
 ## Architecture
 
