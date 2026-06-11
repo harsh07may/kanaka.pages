@@ -1,6 +1,7 @@
 import "@mdxeditor/editor/style.css";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { logout } from "../login/actions";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
@@ -12,12 +13,22 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         >
           Admin
         </Link>
-        <Link
-          href="/"
-          className="font-mono font-bold uppercase text-sm text-ink underline"
-        >
-          ← Back to site
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link
+            href="/"
+            className="font-mono font-bold uppercase text-sm text-ink underline"
+          >
+            ← Back to site
+          </Link>
+          <form action={logout}>
+            <button
+              type="submit"
+              className="font-mono font-bold uppercase text-sm text-ink underline"
+            >
+              Log out
+            </button>
+          </form>
+        </div>
       </nav>
       <main className="max-w-5xl mx-auto px-4 md:px-8 py-10">{children}</main>
     </div>
