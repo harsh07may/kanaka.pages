@@ -91,7 +91,8 @@ const initialState: ActionResult = {};
 
 export function PostForm({ action, initialPost, submitLabel }: PostFormProps) {
   const editorRef = useRef<MDXEditorMethods>(null);
-  const [content, setContent] = useState(initialPost?.content ?? "");
+  const initialContent = useRef(initialPost?.content ?? "").current;
+  const [content, setContent] = useState(initialContent);
 
   const [state, formAction, isPending] = useActionState(
     async (_prevState: ActionResult, formData: FormData) => {
@@ -240,7 +241,7 @@ export function PostForm({ action, initialPost, submitLabel }: PostFormProps) {
         <div className="bg-[#fbf8f1] border-[3px] border-ink brutal-shadow">
           <ForwardRefEditor
             ref={editorRef}
-            markdown={content}
+            markdown={initialContent}
             onChange={setContent}
           />
         </div>
