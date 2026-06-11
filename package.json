@@ -10,8 +10,7 @@
     "lint": "biome check",
     "format": "biome format --write",
     "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push",
-    "db:migrate-content": "tsx scripts/migrate-content-to-db.ts"
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@mdxeditor/editor": "^4.0.2",
@@ -19,7 +18,6 @@
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
     "framer-motion": "^12.40.0",
-    "gray-matter": "^4.0.3",
     "iron-session": "^8.0.4",
     "lucide-react": "^1.16.0",
     "next": "16.2.6",
