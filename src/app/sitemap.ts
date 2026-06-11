@@ -1,11 +1,18 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
 import { getPostSlugs } from "@/lib/posts";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://kanaka-pages.vercel.app";
 
   // Base static routes
-  const routes = ["", "/about", "/blogs", "/contact", "/newsletter", "/privacy"].map((route) => ({
+  const routes = [
+    "",
+    "/about",
+    "/blogs",
+    "/contact",
+    "/newsletter",
+    "/privacy",
+  ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString(),
     changeFrequency: "weekly" as const,
@@ -13,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Dynamic post routes
-  const slugs = getPostSlugs();
+  const slugs = await getPostSlugs();
   const postRoutes = slugs.map((slug) => ({
     url: `${baseUrl}/posts/${slug}`,
     lastModified: new Date().toISOString(),

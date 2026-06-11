@@ -1,5 +1,7 @@
 import { getPosts } from "@/lib/posts";
 
+export const revalidate = 60;
+
 export async function GET() {
   const posts = await getPosts();
   const siteUrl = "https://kanaka.pages"; // Replace with actual URL in production
@@ -13,7 +15,7 @@ export async function GET() {
       <description>${post.excerpt}</description>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
       <guid>${siteUrl}/posts/${post.slug}</guid>
-    </item>`
+    </item>`,
     )
     .join("");
 
