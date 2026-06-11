@@ -1,7 +1,3 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { connection } from "next/server";
 import { AuthorCard } from "@/components/AuthorCard";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
@@ -11,6 +7,10 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { renderPostMDX } from "@/lib/mdx-loader";
 import { getPostBySlug, getPostSlugs, getRelatedPosts } from "@/lib/posts";
 import { getSession } from "@/lib/session";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { connection } from "next/server";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -26,6 +26,7 @@ export async function generateStaticParams() {
 // the admin actions, and a fixed revalidate window conflicts with the
 // per-request dynamic rendering draft posts need for the session-cookie check.
 export const dynamicParams = true;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
