@@ -33,3 +33,14 @@ export const heroContent = pgTable("hero_content", {
 });
 
 export type HeroContentRow = typeof heroContent.$inferSelect;
+
+export const subscribers = pgTable("subscribers", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type SubscriberRow = typeof subscribers.$inferSelect;
+export type NewSubscriberRow = typeof subscribers.$inferInsert;

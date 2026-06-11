@@ -21,6 +21,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             Hero
           </Link>
           <Link
+            href="/admin/subscribers"
+            className="font-mono font-bold uppercase text-sm text-ink underline"
+          >
+            Subscribers
+          </Link>
+          <Link
             href="/"
             className="font-mono font-bold uppercase text-sm text-ink underline"
           >
