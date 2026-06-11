@@ -48,7 +48,7 @@ export default async function BlogsPage() {
         </div>
 
         {/* Tilted Main Container */}
-        <div className="w-full bg-[#fef08a] border-[8px] border-ink brutal-shadow-lg p-6 md:p-16 -rotate-1 relative z-20">
+        <div className="w-full bg-[#fef08a] border-[8px] border-ink brutal-shadow-lg p-6 md:p-16 md:-rotate-1 relative z-20">
           <BlogSearch posts={posts} />
         </div>
       </div>
