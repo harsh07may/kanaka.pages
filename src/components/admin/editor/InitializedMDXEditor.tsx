@@ -32,6 +32,23 @@ import {
 import type { ForwardedRef } from "react";
 import { InsertCallout, InsertImageGrid } from "./jsx-toolbar-buttons";
 
+async function uploadImage(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.set("file", file);
+
+  const response = await fetch("/api/admin/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Image upload failed");
+  }
+
+  const { url } = await response.json();
+  return url;
+}
+
 const jsxComponentDescriptors: JsxComponentDescriptor[] = [
   {
     name: "Callout",
@@ -68,7 +85,7 @@ export default function InitializedMDXEditor({
         thematicBreakPlugin(),
         linkPlugin(),
         linkDialogPlugin(),
-        imagePlugin(),
+        imagePlugin({ imageUploadHandler: uploadImage }),
         codeBlockPlugin({ defaultCodeBlockLanguage: "txt" }),
         codeMirrorPlugin({
           codeBlockLanguages: {

@@ -10,6 +10,68 @@ const inputClass =
 
 const labelClass = "block font-mono text-sm font-bold uppercase mb-1 text-ink";
 
+interface ImageFieldProps {
+  id: string;
+  name: string;
+  label: string;
+  defaultValue?: string;
+}
+
+function ImageField({ id, name, label, defaultValue }: ImageFieldProps) {
+  const [value, setValue] = useState(defaultValue ?? "");
+  const [uploading, setUploading] = useState(false);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.set("file", file);
+      const response = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) throw new Error("Upload failed");
+      const { url } = await response.json();
+      setValue(url);
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  return (
+    <div>
+      <label className={labelClass} htmlFor={id}>
+        {label}
+      </label>
+      <div className="flex gap-2">
+        <input
+          id={id}
+          name={name}
+          type="text"
+          placeholder="/images/example.jpg"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className={inputClass}
+        />
+        <label className="shrink-0 cursor-pointer bg-secondary text-ink font-mono text-sm font-bold uppercase border-[3px] border-ink px-4 py-2 brutal-shadow brutal-hover brutal-active transition-all flex items-center">
+          {uploading ? "..." : "Upload"}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={uploading}
+          />
+        </label>
+      </div>
+    </div>
+  );
+}
+
 interface PostFormProps {
   action: (formData: FormData) => void | Promise<void>;
   initialPost?: Post & { content: string };
@@ -85,19 +147,12 @@ export function PostForm({ action, initialPost, submitLabel }: PostFormProps) {
           />
         </div>
 
-        <div>
-          <label className={labelClass} htmlFor="image">
-            Cover Image Path
-          </label>
-          <input
-            id="image"
-            name="image"
-            type="text"
-            placeholder="/images/example.jpg"
-            defaultValue={initialPost?.image}
-            className={inputClass}
-          />
-        </div>
+        <ImageField
+          id="image"
+          name="image"
+          label="Cover Image Path"
+          defaultValue={initialPost?.image}
+        />
 
         <div>
           <label className={labelClass} htmlFor="author">
@@ -125,18 +180,12 @@ export function PostForm({ action, initialPost, submitLabel }: PostFormProps) {
           />
         </div>
 
-        <div>
-          <label className={labelClass} htmlFor="authorImage">
-            Author Image Path (optional)
-          </label>
-          <input
-            id="authorImage"
-            name="authorImage"
-            type="text"
-            defaultValue={initialPost?.authorImage}
-            className={inputClass}
-          />
-        </div>
+        <ImageField
+          id="authorImage"
+          name="authorImage"
+          label="Author Image Path (optional)"
+          defaultValue={initialPost?.authorImage}
+        />
       </div>
 
       <div>
