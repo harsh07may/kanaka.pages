@@ -1,5 +1,5 @@
-import { createReader } from "@keystatic/core/reader";
-import config from "../../keystatic.config";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 const BOOK_COLOR_MAP: Record<string, string> = {
   yellow: "bg-yellow-200",
@@ -77,17 +77,37 @@ export interface HeroData {
   contacts: ContactsData;
 }
 
-export async function getHeroData(): Promise<HeroData> {
-  const reader = createReader(process.cwd(), config);
+const CONTENT_DIR = path.join(process.cwd(), "content", "hero");
 
+async function readJson<T>(relativePath: string): Promise<T | null> {
+  try {
+    const raw = await readFile(path.join(CONTENT_DIR, relativePath), "utf-8");
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+export async function getHeroData(): Promise<HeroData> {
   const [character, whereILive, placesToGo, brainDump, books, contacts] =
     await Promise.all([
-      reader.singletons.character.read(),
-      reader.singletons.whereILive.read(),
-      reader.singletons.placesToGo.read(),
-      reader.singletons.brainDump.read(),
-      reader.singletons.books.read(),
-      reader.singletons.contacts.read(),
+      readJson<{ name: string; bio: string }>("character.json"),
+      readJson<{ location: string; description: string; image: string }>(
+        "where-i-live/index.json",
+      ),
+      readJson<{ places: PlaceItem[] }>("places-to-go.json"),
+      readJson<{ items: { text: string }[] }>("brain-dump.json"),
+      readJson<{ books: { title: string; author: string; color: string }[] }>(
+        "books.json",
+      ),
+      readJson<{
+        contacts: {
+          icon: string;
+          handle: string;
+          url: string;
+          bgColor: string;
+        }[];
+      }>("contacts.json"),
     ]);
 
   return {
@@ -102,7 +122,9 @@ export async function getHeroData(): Promise<HeroData> {
       description:
         whereILive?.description ??
         "A place where the sea breeze meets deep-rooted history, inspiring every word I write.",
-      image: whereILive?.image ?? "/hero/kanaka-goa-scenery.png",
+      image: whereILive?.image
+        ? `/hero/${whereILive.image}`
+        : "/hero/kanaka-goa-scenery.png",
     },
     "places-to-go": {
       places: (placesToGo?.places ?? []).map((p) => ({

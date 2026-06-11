@@ -14,7 +14,6 @@
     "db:migrate-content": "tsx scripts/migrate-content-to-db.ts"
   },
   "dependencies": {
-    "@keystatic/core": "^0.5.50",
     "@mdxeditor/editor": "^4.0.2",
     "@types/mdx": "^2.0.13",
     "bcryptjs": "^3.0.3",
