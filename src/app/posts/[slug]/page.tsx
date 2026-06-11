@@ -21,9 +21,11 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({ slug }));
 }
 
-// Posts created after the last build are still rendered (and cached) on demand
+// Posts created after the last build are still rendered (and cached) on demand.
+// No time-based revalidate: content changes are pushed via revalidatePath() in
+// the admin actions, and a fixed revalidate window conflicts with the
+// per-request dynamic rendering draft posts need for the session-cookie check.
 export const dynamicParams = true;
-export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
