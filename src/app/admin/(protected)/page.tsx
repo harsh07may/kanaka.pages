@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { getPosts } from "@/lib/posts";
+import { getAllPosts } from "@/lib/posts";
 import { deletePost } from "./actions";
 
 export default async function AdminPostsPage() {
-  const posts = await getPosts();
+  const posts = await getAllPosts();
 
   return (
     <div className="flex flex-col gap-6">
@@ -24,12 +24,28 @@ export default async function AdminPostsPage() {
             className="bg-white border-[3px] border-ink brutal-shadow flex items-center justify-between gap-4 px-4 py-3"
           >
             <div className="flex flex-col">
-              <span className="font-mono font-bold">{post.title}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-bold">{post.title}</span>
+                <span
+                  className={`font-mono text-[10px] font-bold uppercase border-[2px] border-ink px-1.5 py-0.5 ${
+                    post.status === "draft" ? "bg-yellow-300" : "bg-green-300"
+                  }`}
+                >
+                  {post.status}
+                </span>
+              </div>
               <span className="font-mono text-xs text-ink/60">
                 {post.date} — /{post.slug}
               </span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href={`/posts/${post.slug}`}
+                target="_blank"
+                className="font-mono text-sm font-bold uppercase border-[3px] border-ink px-3 py-1.5 bg-white brutal-shadow brutal-hover brutal-active transition-all"
+              >
+                View
+              </Link>
               <Link
                 href={`/admin/posts/${post.id}/edit`}
                 className="font-mono text-sm font-bold uppercase border-[3px] border-ink px-3 py-1.5 bg-[#fef08a] brutal-shadow brutal-hover brutal-active transition-all"

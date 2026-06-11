@@ -9,6 +9,7 @@ import { RelatedPosts } from "@/components/RelatedPosts";
 import { ShareButtons } from "@/components/ShareButtons";
 import { renderPostMDX } from "@/lib/mdx-loader";
 import { getPostBySlug, getPostSlugs, getRelatedPosts } from "@/lib/posts";
+import { getSession } from "@/lib/session";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -65,6 +66,11 @@ export default async function PostPage({ params }: Props) {
 
   if (!post) notFound();
 
+  if (post.status === "draft") {
+    const session = await getSession();
+    if (!session.isLoggedIn) notFound();
+  }
+
   const postBody = renderPostMDX(post.content);
   if (!postBody) notFound();
 
@@ -75,6 +81,11 @@ export default async function PostPage({ params }: Props) {
       <main className="grow w-full max-w-max-width mx-auto px-margin-page py-gap-lg flex flex-col md:flex-row gap-gap-lg">
         {/* ── Main Article ── */}
         <article className="w-full md:w-8/12 flex flex-col gap-gap-lg">
+          {post.status === "draft" && (
+            <div className="bg-yellow-300 border-[3px] border-ink font-mono text-sm font-bold uppercase px-4 py-2 brutal-shadow self-start">
+              Draft — not visible to the public
+            </div>
+          )}
           <PostHeader post={post} />
 
           {/* MDX body — all element styling comes from mdx-components.tsx */}

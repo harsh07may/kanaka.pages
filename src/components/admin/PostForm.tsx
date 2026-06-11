@@ -156,6 +156,21 @@ export function PostForm({ action, initialPost, submitLabel }: PostFormProps) {
         </div>
 
         <div>
+          <label className={labelClass} htmlFor="status">
+            Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            defaultValue={initialPost?.status ?? "draft"}
+            className={inputClass}
+          >
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+
+        <div>
           <label className={labelClass} htmlFor="tags">
             Tags (comma separated)
           </label>

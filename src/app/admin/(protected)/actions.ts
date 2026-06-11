@@ -32,6 +32,7 @@ function readPostFields(formData: FormData) {
     date: String(formData.get("date") ?? ""),
     excerpt: String(formData.get("excerpt") ?? ""),
     color: String(formData.get("color") ?? "yellow") as Post["color"],
+    status: String(formData.get("status") ?? "draft") as Post["status"],
     tags,
     image: String(formData.get("image") ?? ""),
     author: String(formData.get("author") ?? ""),

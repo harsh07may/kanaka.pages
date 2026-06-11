@@ -15,6 +15,9 @@ export const posts = pgTable("posts", {
   color: text("color", { enum: ["yellow", "red", "blue"] })
     .notNull()
     .default("yellow"),
+  status: text("status", { enum: ["draft", "published"] })
+    .notNull()
+    .default("draft"),
   content: text("content").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

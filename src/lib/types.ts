@@ -11,6 +11,7 @@ export interface Post {
   authorBio: string;
   authorImage?: string;
   color: "yellow" | "red" | "blue";
+  status: "draft" | "published";
 }
 
 export interface FrontMatter {

@@ -1,4 +1,4 @@
-import { desc, eq, ne } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 import { cache } from "react";
 import { db } from "./db";
 import { type PostRow, posts } from "./db/schema";
@@ -18,15 +18,28 @@ function rowToPost(row: PostRow): Post {
     authorBio: row.authorBio,
     authorImage: row.authorImage ?? undefined,
     color: row.color as Post["color"],
+    status: row.status as Post["status"],
   };
 }
 
 export async function getPostSlugs(): Promise<string[]> {
-  const rows = await db.select({ slug: posts.slug }).from(posts);
+  const rows = await db
+    .select({ slug: posts.slug })
+    .from(posts)
+    .where(eq(posts.status, "published"));
   return rows.map((r) => r.slug);
 }
 
 export async function getPosts(): Promise<Post[]> {
+  const rows = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.status, "published"))
+    .orderBy(desc(posts.date));
+  return rows.map(rowToPost);
+}
+
+export async function getAllPosts(): Promise<Post[]> {
   const rows = await db.select().from(posts).orderBy(desc(posts.date));
   return rows.map(rowToPost);
 }
@@ -38,7 +51,7 @@ export async function getRelatedPosts(
   const rows = await db
     .select()
     .from(posts)
-    .where(ne(posts.slug, currentSlug))
+    .where(and(eq(posts.status, "published"), ne(posts.slug, currentSlug)))
     .orderBy(desc(posts.date))
     .limit(limit);
   return rows.map(rowToPost);
