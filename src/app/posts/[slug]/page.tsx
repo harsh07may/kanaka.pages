@@ -8,7 +8,7 @@ import { PostHeader } from "@/components/PostHeader";
 import { RelatedPosts } from "@/components/RelatedPosts";
 import { ShareButtons } from "@/components/ShareButtons";
 import { renderPostMDX } from "@/lib/mdx-loader";
-import { getPost, getPostSlugs, getRelatedPosts } from "@/lib/posts";
+import { getPostBySlug, getPostSlugs, getRelatedPosts } from "@/lib/posts";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -25,7 +25,7 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPost(slug);
+  const post = await getPostBySlug(slug);
   if (!post) return {};
 
   const url = `https://kanaka-pages.vercel.app/posts/${slug}`;
@@ -58,13 +58,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
-  const post = await getPost(slug);
+  const [post, relatedPosts] = await Promise.all([
+    getPostBySlug(slug),
+    getRelatedPosts(slug, 3),
+  ]);
 
   if (!post) notFound();
 
-  const relatedPosts = await getRelatedPosts(slug, 3);
-
-  const postBody = await renderPostMDX(slug);
+  const postBody = renderPostMDX(post.content);
   if (!postBody) notFound();
 
   return (

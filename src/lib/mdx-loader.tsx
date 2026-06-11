@@ -1,15 +1,12 @@
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { mdxComponents } from "@/mdx-components";
-import { getPostContent } from "./posts";
 
 /**
- * Loads a post's MDX body from the database and returns a rendered
- * <MDXRemote> element. Returns null if the post doesn't exist
+ * Renders a post's MDX body. Returns null if the content is empty
  * (caller should notFound()).
  */
-export async function renderPostMDX(slug: string) {
-  const content = await getPostContent(slug);
-  if (content === undefined) return null;
+export function renderPostMDX(content: string) {
+  if (!content.trim()) return null;
 
   return <MDXRemote source={content} components={mdxComponents} />;
 }

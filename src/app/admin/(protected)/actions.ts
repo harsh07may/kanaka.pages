@@ -5,8 +5,20 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { posts } from "@/lib/db/schema";
+import { getSession } from "@/lib/session";
 import { slugify } from "@/lib/slugify";
 import type { Post } from "@/lib/types";
+
+export interface ActionResult {
+  error?: string;
+}
+
+async function requireAuth() {
+  const session = await getSession();
+  if (!session.isLoggedIn) {
+    redirect("/admin/login");
+  }
+}
 
 function readPostFields(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
@@ -39,34 +51,77 @@ function revalidatePostPaths(slug: string) {
   revalidatePath("/admin");
 }
 
-export async function createPost(formData: FormData) {
-  const fields = readPostFields(formData);
-  const slug = slugify(fields.title);
+export async function createPost(
+  formData: FormData,
+): Promise<ActionResult | undefined> {
+  await requireAuth();
 
-  await db.insert(posts).values({
-    id: slug,
-    slug,
-    ...fields,
-  });
+  const fields = readPostFields(formData);
+
+  if (!fields.content.trim()) {
+    return { error: "Content cannot be empty." };
+  }
+
+  const slug = slugify(fields.title);
+  if (!slug) {
+    return { error: "Title must contain at least one letter or number." };
+  }
+
+  const [existing] = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .where(eq(posts.slug, slug))
+    .limit(1);
+
+  if (existing) {
+    return {
+      error: `A post with the slug "${slug}" already exists. Please choose a different title.`,
+    };
+  }
+
+  await db.insert(posts).values({ id: slug, slug, ...fields });
 
   revalidatePostPaths(slug);
   redirect("/admin");
 }
 
-export async function updatePost(id: string, formData: FormData) {
+export async function updatePost(
+  id: string,
+  formData: FormData,
+): Promise<ActionResult | undefined> {
+  await requireAuth();
+
   const fields = readPostFields(formData);
-  const slug = slugify(fields.title);
+
+  if (!fields.content.trim()) {
+    return { error: "Content cannot be empty." };
+  }
+
+  const [existing] = await db
+    .select({ slug: posts.slug })
+    .from(posts)
+    .where(eq(posts.id, id))
+    .limit(1);
+
+  if (!existing) {
+    return { error: "Post not found." };
+  }
 
   await db
     .update(posts)
-    .set({ ...fields, slug, updatedAt: new Date() })
+    .set({ ...fields, updatedAt: new Date() })
     .where(eq(posts.id, id));
 
-  revalidatePostPaths(slug);
+  revalidatePostPaths(existing.slug);
   redirect("/admin");
 }
 
-export async function deletePost(id: string, slug: string) {
+export async function deletePost(
+  id: string,
+  slug: string,
+): Promise<ActionResult | undefined> {
+  await requireAuth();
+
   await db.delete(posts).where(eq(posts.id, id));
   revalidatePostPaths(slug);
   redirect("/admin");

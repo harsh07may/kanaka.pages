@@ -1,7 +1,8 @@
 "use client";
 
 import type { MDXEditorMethods } from "@mdxeditor/editor";
-import { useRef, useState } from "react";
+import { useActionState, useRef, useState } from "react";
+import type { ActionResult } from "@/app/admin/(protected)/actions";
 import type { Post } from "@/lib/types";
 import { ForwardRefEditor } from "./editor/ForwardRefEditor";
 
@@ -20,12 +21,14 @@ interface ImageFieldProps {
 function ImageField({ id, name, label, defaultValue }: ImageFieldProps) {
   const [value, setValue] = useState(defaultValue ?? "");
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
+    setError(null);
     try {
       const formData = new FormData();
       formData.set("file", file);
@@ -33,9 +36,11 @@ function ImageField({ id, name, label, defaultValue }: ImageFieldProps) {
         method: "POST",
         body: formData,
       });
-      if (!response.ok) throw new Error("Upload failed");
-      const { url } = await response.json();
-      setValue(url);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Upload failed");
+      setValue(data.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -68,27 +73,41 @@ function ImageField({ id, name, label, defaultValue }: ImageFieldProps) {
           />
         </label>
       </div>
+      {error && (
+        <p className="text-red-700 font-mono text-xs font-bold mt-1">{error}</p>
+      )}
     </div>
   );
 }
 
 interface PostFormProps {
-  action: (formData: FormData) => void | Promise<void>;
+  action: (formData: FormData) => Promise<ActionResult | undefined>;
   initialPost?: Post & { content: string };
   submitLabel: string;
 }
+
+const initialState: ActionResult = {};
 
 export function PostForm({ action, initialPost, submitLabel }: PostFormProps) {
   const editorRef = useRef<MDXEditorMethods>(null);
   const [content, setContent] = useState(initialPost?.content ?? "");
 
-  async function handleAction(formData: FormData) {
-    formData.set("content", editorRef.current?.getMarkdown() ?? content);
-    await action(formData);
-  }
+  const [state, formAction, isPending] = useActionState(
+    async (_prevState: ActionResult, formData: FormData) => {
+      formData.set("content", editorRef.current?.getMarkdown() ?? content);
+      return (await action(formData)) ?? {};
+    },
+    initialState,
+  );
 
   return (
-    <form action={handleAction} className="flex flex-col gap-6">
+    <form action={formAction} className="flex flex-col gap-6">
+      {state.error && (
+        <div className="bg-red-100 border-[3px] border-ink text-red-700 font-mono text-sm font-bold px-4 py-3 brutal-shadow">
+          {state.error}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className={labelClass} htmlFor="title">
@@ -228,9 +247,10 @@ export function PostForm({ action, initialPost, submitLabel }: PostFormProps) {
 
       <button
         type="submit"
-        className="self-start bg-action text-white font-mono font-bold uppercase border-[3px] border-ink px-6 py-3 brutal-shadow brutal-hover brutal-active transition-all"
+        disabled={isPending}
+        className="self-start bg-action text-white font-mono font-bold uppercase border-[3px] border-ink px-6 py-3 brutal-shadow brutal-hover brutal-active transition-all disabled:opacity-60"
       >
-        {submitLabel}
+        {isPending ? "Saving..." : submitLabel}
       </button>
     </form>
   );

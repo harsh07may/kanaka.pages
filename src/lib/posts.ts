@@ -1,4 +1,5 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, ne } from "drizzle-orm";
+import { cache } from "react";
 import { db } from "./db";
 import { type PostRow, posts } from "./db/schema";
 import type { Post } from "./types";
@@ -30,32 +31,17 @@ export async function getPosts(): Promise<Post[]> {
   return rows.map(rowToPost);
 }
 
-export async function getPost(slug: string): Promise<Post | undefined> {
-  const [row] = await db
-    .select()
-    .from(posts)
-    .where(eq(posts.slug, slug))
-    .limit(1);
-  return row ? rowToPost(row) : undefined;
-}
-
-export async function getPostContent(
-  slug: string,
-): Promise<string | undefined> {
-  const [row] = await db
-    .select({ content: posts.content })
-    .from(posts)
-    .where(eq(posts.slug, slug))
-    .limit(1);
-  return row?.content;
-}
-
 export async function getRelatedPosts(
   currentSlug: string,
   limit = 3,
 ): Promise<Post[]> {
-  const all = await getPosts();
-  return all.filter((p) => p.slug !== currentSlug).slice(0, limit);
+  const rows = await db
+    .select()
+    .from(posts)
+    .where(ne(posts.slug, currentSlug))
+    .orderBy(desc(posts.date))
+    .limit(limit);
+  return rows.map(rowToPost);
 }
 
 export async function getPostById(
@@ -64,3 +50,14 @@ export async function getPostById(
   const [row] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
   return row ? { ...rowToPost(row), content: row.content } : undefined;
 }
+
+export const getPostBySlug = cache(
+  async (slug: string): Promise<(Post & { content: string }) | undefined> => {
+    const [row] = await db
+      .select()
+      .from(posts)
+      .where(eq(posts.slug, slug))
+      .limit(1);
+    return row ? { ...rowToPost(row), content: row.content } : undefined;
+  },
+);
